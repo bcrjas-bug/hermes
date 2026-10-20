@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hermes</title>
+  <meta name="description" content="Local-first metadata scrubber for photos and documents.">
+  <meta name="color-scheme" content="dark light">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2317171a'/%3E%3Cpath d='M16 6 L24 9 V16 C24 21 16 26 16 26 C16 26 8 21 8 16 V9 Z' fill='none' stroke='%237c9fc4' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M12 16 L15 19 L20 13' fill='none' stroke='%237c9fc4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+  <script>
+    (function() {
+      var saved = localStorage.getItem("color-scheme");
+      if (saved) {
+        document.documentElement.setAttribute("data-theme", saved);
+        var meta = document.querySelector('meta[name="color-scheme"]');
+        if (meta) meta.content = saved;
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/jszip.min.js" defer></script>
+</head>
+<body>
+  <div class="app-layout">
+
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-name">hermes</span>
+        <span class="brand-tag">metadata scrubber</span>
+      </div>
+      <button id="themeToggleBtn" class="icon-btn" aria-label="Toggle theme">
+        <svg class="sun-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        <svg class="moon-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </header>
+
+    <main class="app-main">
+
+      <nav class="nav-tabs" role="tablist">
+        <button id="tabDropzone" class="tab-btn active" role="tab" aria-selected="true">Files</button>
+        <button id="tabLocalPath" class="tab-btn" role="tab" aria-selected="false">Local path</button>
+      </nav>
+
+      <!-- ============ FILES ============ -->
+      <section id="sectionDropzone" class="tab-pane active" role="tabpanel">
+
+        <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Drop files here">
+          <span class="drop-text">Drop files here, or</span>
+          <button id="selectFilesBtn" class="link-btn" type="button">select files</button>
+          <span class="drop-text">or</span>
+          <button id="selectFolderBtn" class="link-btn" type="button">a folder</button>
+        </div>
+
+        <input type="file" id="fallbackFileInput" multiple
+               accept=".png,.jpg,.jpeg,.pdf,.heic,.heif,.webp,.tif,.tiff,.bmp,.avif"
+               style="display:none;">
+        <input type="file" id="fallbackFolderInput" webkitdirectory directory multiple style="display:none;">
+
+        <div id="batchToolbar" class="batch-toolbar hidden">
+          <div class="batch-stats">
+            <span><span class="stat-key">Files</span><span id="statFileCount" class="stat-val">0</span></span>
+            <span><span class="stat-key">Tags</span><span id="statMetadataCount" class="stat-val">0</span></span>
+            <span><span class="stat-key">Saved</span><span id="statBytesSaved" class="stat-val stat-val--ok">0 B</span></span>
+          </div>
+          <div class="batch-buttons">
+            <button id="scrubAllBtn" class="btn btn-secondary btn-sm" type="button">Scrub all</button>
+            <button id="downloadAllZipBtn" class="btn btn-outline btn-sm" type="button">Download .zip</button>
+            <button id="clearAllBtn" class="btn btn-subtle btn-sm" type="button">Clear</button>
+          </div>
+        </div>
+
+        <div id="fileListContainer" class="file-list"></div>
+
+      </section>
+
+      <!-- ============ LOCAL PATH ============ -->
+      <section id="sectionLocalPath" class="tab-pane" role="tabpanel">
+        <div class="local-panel">
+          <h2>Local path</h2>
+          <p class="desc">Scrub PNG, JPEG, and PDF files in place at filesystem speed. HEIC and other formats need the Files tab.</p>
+
+          <form id="localPathForm">
+            <div class="path-row">
+              <input type="text" id="localPathInput" placeholder="/Users/you/Desktop/photos" required>
+              <button type="button" id="localInspectBtn" class="btn btn-secondary">Inspect</button>
+              <button type="submit" id="localScrubSubmitBtn" class="btn btn-primary">Scrub</button>
+            </div>
+
+            <div class="presets">
+              <span class="label">Quick:</span>
+              <button type="button" class="preset-btn" data-path="~/Desktop">Desktop</button>
+              <button type="button" class="preset-btn" data-path="~/Downloads">Downloads</button>
+            </div>
+
+            <div class="opts">
+              <label><input type="checkbox" id="localRecursiveCheck" checked> Recursive</label>
+              <label><input type="checkbox" id="localBackupCheck"> Create .bak backups</label>
+            </div>
+          </form>
+
+          <div id="localResultBox" class="local-result hidden"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  </div>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
